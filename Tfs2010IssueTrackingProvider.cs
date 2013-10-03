@@ -16,7 +16,8 @@ namespace Inedo.BuildMasterExtensions.TFS2010
     /// </summary>
     [ProviderProperties(
         "Team Foundation Server",
-        "Supports TFS 2005 and 2010; requires that Visual Studio Team System (or greater) 2010 is installed.")]
+        "Supports TFS 2005 and 2010; requires that Visual Studio Team System (or greater) 2010 is installed.",
+        RequiresTransparentProxy = true)]
     [CustomEditor(typeof(Tfs2010IssueTrackingProviderEditor))]
     public sealed class Tfs2010IssueTrackingProvider : IssueTrackingProviderBase, ICategoryFilterable, IUpdatingProvider
     {
@@ -116,7 +117,7 @@ namespace Inedo.BuildMasterExtensions.TFS2010
         /// <returns>
         /// The URL of the specified issue if applicable; otherwise null.
         /// </returns>
-        public override string GetIssueUrl(Issue issue)
+        public override string GetIssueUrl(IssueTrackerIssue issue)
         {
             return CombinePaths(this.CollectionUri.ToString(), String.Format(WorkItemUrlFormat, issue.IssueId));
         }
@@ -131,7 +132,7 @@ namespace Inedo.BuildMasterExtensions.TFS2010
         /// release
         /// </summary>
         /// <param name="releaseNumber">The release number from which the issues should be retrieved</param>
-        public override Issue[] GetIssues(string releaseNumber)
+        public override IssueTrackerIssue[] GetIssues(string releaseNumber)
         {
             bool filterByProject = CategoryIdFilter.Length == 2 && !String.IsNullOrEmpty(CategoryIdFilter[1]);
             
@@ -168,9 +169,9 @@ namespace Inedo.BuildMasterExtensions.TFS2010
         /// Determines if the specified issue is closed
         /// </summary>
         /// <param name="issue">The issue to determine closed status</param>
-        public override bool IsIssueClosed(Issue issue)
+        public override bool IsIssueClosed(IssueTrackerIssue issue)
         {
-            return Util.In(issue.IssueStatus, Tfs2010Issue.DefaultStatusNames.Closed, Tfs2010Issue.DefaultStatusNames.Resolved);
+            return issue.IssueStatus == Tfs2010Issue.DefaultStatusNames.Closed || issue.IssueStatus == Tfs2010Issue.DefaultStatusNames.Resolved;
         }
 
         /// <summary>
@@ -236,7 +237,7 @@ namespace Inedo.BuildMasterExtensions.TFS2010
         /// The nesting level (i.e. <see cref="CategoryBase.SubCategories"/>) can never be less than
         /// the length of <see cref="CategoryTypeNames"/>
         /// </remarks>
-        public CategoryBase[] GetCategories()
+        public IssueTrackerCategory[] GetCategories()
         {
             // transform collection names from TFS SDK format to BuildMaster's CategoryBase object
             return this.TfsConfigurationServer

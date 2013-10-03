@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Inedo.BuildMaster;
-using Inedo.BuildMaster.Diagnostics;
 using Inedo.BuildMaster.Extensibility.Providers;
 using Inedo.BuildMaster.Extensibility.Providers.SourceControl;
 using Inedo.BuildMaster.Files;
@@ -16,9 +15,10 @@ namespace Inedo.BuildMasterExtensions.TFS2010
 {
     [ProviderProperties(
         "Team Foundation Server",
-        "Supports TFS 2005 and 2010; requires that Visual Studio Team System (or greater) 2010 is installed.")]
+        "Supports TFS 2005 and 2010; requires that Visual Studio Team System (or greater) 2010 is installed.",
+        RequiresTransparentProxy = true)]
     [CustomEditor(typeof(TfsSourceControlProviderEditor))]
-    public sealed class TfsSourceControlProvider : SourceControlProviderBase, IVersioningProvider, IRevisionProvider
+    public sealed class TfsSourceControlProvider : SourceControlProviderBase, ILabelingProvider, IRevisionProvider
     {
         private const string EmptyPathString = "$/";
         private static readonly string WorkspaceName = "BuildMaster" + Environment.MachineName;
@@ -345,7 +345,7 @@ namespace Inedo.BuildMasterExtensions.TFS2010
         /// <returns>
         /// A representation of the current revision in source control.
         /// </returns>
-        public byte[] GetCurrentRevision(string path)
+        public object GetCurrentRevision(string path)
         {
             var sourcePath = BuildSourcePath(path);
 
@@ -357,10 +357,10 @@ namespace Inedo.BuildMasterExtensions.TFS2010
             // get the items
             ItemSet items = sourceControl.GetItems(sourcePath, VersionSpec.Latest, RecursionType.Full, DeletedState.Any, ItemType.Any);
             if (items == null || items.Items == null || items.Items.Length == 0)
-                return new byte[0];
+                return 0;
 
             // return the highest change set id
-            return BitConverter.GetBytes(items.Items.Max(i => i.ChangesetId));
+            return items.Items.Max(i => i.ChangesetId);
         }
     }
 }
