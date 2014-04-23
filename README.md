@@ -3,6 +3,8 @@ bmx-tfs2010
 
 TFS2010 BuildMaster extension
 
+This is a legacy extension and may be unavailable in a future release. Please see http://inedo.com/buildmaster/extensions/TFS2010 instead.
+
 **License**
 
 Copyright (c) 2013 Inedo, LLC. All rights reserved.
